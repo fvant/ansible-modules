@@ -1,7 +1,32 @@
 # ansible-modules
 A few modules to make life in AWS context easier: dealing with subnet lookup and parsing/formatting strings with a sprintf function
 
-# sprintf
+## get_subnet
+There is no Ansible module to lookup the subnet id based on its name. This module gives you exactly that.
+
+```
+- ec2_vpc_subnet_facts:
+     aws_region: "{{ aws_region }}"
+     aws_access_key: '{{ keys.mng.aws_access_key }}'
+     aws_secret_key: '{{ keys.mng.aws_secret_key }}'
+     filters:
+       vpc-id: "{{ vpc_id }}"
+  register: _subnets
+
+# vpc now has all you need
+
+- set_fact:
+     vpc:
+        vpc_id: "{{ vpc_id }}"
+        subnets: "{{ _subnets.subnets }}"
+```
+So now we have a variable vpc that holds all relevant details and we can lookup the subnet id(s) like this:
+```
+- set_fact:
+        subnet={{ (vpc.subnets | get_subnets('Name', 'prod-mysubnet-a', 'id'))[0] }}  #[0] because we only need 1 for AZ a
+```
+
+## sprintf
 This modules gives you the sprintf flexibility you sometimes need.  
 
 This would be the basic example
